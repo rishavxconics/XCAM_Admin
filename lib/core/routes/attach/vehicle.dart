@@ -104,7 +104,7 @@ class _VehicleAttachState extends State<VehicleAttach> {
         automaticallyImplyLeading: false,
         title: Center(
           child: Text(
-            "XCAM Create",
+            "XCAM Admin",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),

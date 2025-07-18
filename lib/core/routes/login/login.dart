@@ -28,7 +28,7 @@ class _LoginState extends State<Login> {
         automaticallyImplyLeading: false,
         title: const Center(
           child: Text(
-            "XCAM Create",
+            "XCAM Admin",
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),

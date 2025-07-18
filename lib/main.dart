@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       designSize: MediaQuery.of(context).size,
       child: BlocProvider(
         create: (_) => AuthBloc()..add(AuthLoggedInEvent()),
-        child: MaterialApp(title: 'Flutter Demo', home: const MainPage()),
+        child: MaterialApp(title: 'XCAM Admin', home: const MainPage()),
       ),
     );
   }

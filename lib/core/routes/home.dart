@@ -97,7 +97,7 @@ class _HomeState extends State<Home> {
             children: [
               SizedBox(width: 30),
               Text(
-                "XCAM Create",
+                "XCAM Admin",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
