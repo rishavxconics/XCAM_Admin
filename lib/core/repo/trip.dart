@@ -10,7 +10,8 @@ final Dio _dio = GetIt.I<Dio>();
 Future<bool> createTrip(TripModel data, String vehicleNumber) async {
   try {
     String token = await SecureLocalStorage.getValue("token");
-    Response tripResponse = await _dio.get("${UrlConfig.baseurl}/trip/",
+    Response tripResponse = await _dio.get(
+      "${UrlConfig.baseurl}/trip/",
       queryParameters: {"vehicle_number": vehicleNumber},
       options: Options(headers: {"Authorization": "Bearer $token"}),
     );
@@ -18,7 +19,7 @@ Future<bool> createTrip(TripModel data, String vehicleNumber) async {
         .map((json) => TripViewModel.fromJson(json))
         .toList();
     CustomLogger.debug(trips[0]);
-    if(trips[0].detLat != null) {
+    if (trips[0].detLat != null) {
       Response response = await _dio.post(
         "${UrlConfig.baseurl}/trip/create",
         data: data.toJson(),
@@ -26,7 +27,7 @@ Future<bool> createTrip(TripModel data, String vehicleNumber) async {
       );
       CustomLogger.debug(response.data);
       return true;
-    }else{
+    } else {
       return false;
     }
   } on DioException catch (e) {
@@ -92,10 +93,29 @@ Future<void> updateTrip(TripUpdateModel data, int tripId) async {
     );
     CustomLogger.debug(response.data);
   } on DioException catch (e) {
-    CustomLogger.error("Trip Update failed: ${e.response?.data}, ${e.response?.statusCode}");
+    CustomLogger.error(
+      "Trip Update failed: ${e.response?.data}, ${e.response?.statusCode}",
+    );
     rethrow;
   } catch (e) {
     CustomLogger.error(e);
     rethrow;
+  }
+}
+
+Future<bool> updateTripStatus(TripUpdateModel data,int tripId, String token) async {
+  try {
+    CustomLogger.debug("Sending updateTripStatus payload: ${data.toFormData()}");
+    Response response = await _dio.put(
+      "${UrlConfig.baseurl}/trip/update/$tripId",
+      queryParameters: {"trip_id": tripId},
+      data: (FormData.fromMap(data.toFormData())),
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+    CustomLogger.debug(response.data);
+    return true;
+  } catch (e) {
+    CustomLogger.error(e);
+    return false;
   }
 }

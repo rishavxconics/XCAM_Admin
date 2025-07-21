@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logistics_customer/core/bloc/auth/auth_bloc.dart';
+import 'package:logistics_customer/core/bloc/upload_bloc/upload_bloc.dart';
 import 'package:logistics_customer/core/routes/login/mainPage.dart';
 import 'package:logistics_customer/core/services/setup.dart';
 
@@ -17,8 +18,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: MediaQuery.of(context).size,
-      child: BlocProvider(
-        create: (_) => AuthBloc()..add(AuthLoggedInEvent()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => AuthBloc()..add(AuthLoggedInEvent())),
+          BlocProvider(create: (_) => UploadBloc()),
+        ],
         child: MaterialApp(title: 'XCAM Admin', home: const MainPage()),
       ),
     );

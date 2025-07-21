@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logistics_customer/core/bloc/auth/auth_bloc.dart';
+import 'package:logistics_customer/core/bloc/upload_bloc/upload_bloc.dart';
 import 'package:logistics_customer/core/components/custombuttons.dart';
 import 'package:logistics_customer/core/models/trip.dart';
 import 'package:logistics_customer/core/repo/trip.dart';
@@ -22,6 +23,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<TripViewModel> trips = [];
+  int? uploadingTripId;
 
   @override
   void initState() {
@@ -224,37 +226,98 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                                 DataCell(
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: trip.detLang == null
-                                          ? Colors.red
-                                          : Colors.green,
-                                    ),
-                                    onPressed: trip.detLang == null
-                                        ? () async {
-                                            await checkLocationServices();
-                                            Position position =
-                                                await _determinePosition();
-                                            final updateModel = TripUpdateModel(
-                                              cameraStatus: 1,
-                                              status: "0",
-                                              detLat: position.latitude,
-                                              detLang: position.longitude,
-                                              endedAt: DateTime.now(),
-                                            );
-                                            await updateTrip(
-                                              updateModel,
-                                              trip.id,
-                                            );
-                                            getAllTrips();
+                                  Row(
+                                    children: [
+                                      BlocConsumer<UploadBloc, UploadState>(
+                                        listener: (context, state) {
+                                          CustomLogger.debug(state);
+                                          if (state is UploadLoadedState || state is UploadErrorState) {
+                                            setState(() {
+                                              uploadingTripId = null;
+                                            });
+
+                                            if (state is UploadLoadedState) {
+                                              Fluttertoast.showToast(msg: "Upload complete.");
+                                              getAllTrips();
+                                            } else if (state is UploadErrorState) {
+                                              Fluttertoast.showToast(msg: "Upload failed: ${state.errorModel.message}");
+                                            }
                                           }
-                                        : null,
-                                    child: Text(
-                                      "End Trip",
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                        },
+                                        builder: (context, state) {
+                                          final isUploadingThisTrip = uploadingTripId == trip.id;
+
+                                          return IconButton(
+                                            icon: isUploadingThisTrip
+                                                ? const SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            )
+                                                : const Icon(Icons.file_upload_outlined),
+                                            onPressed: (trip.detLang == null && !isUploadingThisTrip && trip.status != "2")
+                                                ? () {
+                                              final updateModel = TripUpdateModel(
+                                                cameraStatus: 0,
+                                                status: "1",
+                                                endedAt: DateTime.now(),
+                                              );
+
+                                              setState(() {
+                                                uploadingTripId = trip.id;
+                                              });
+
+                                              context.read<UploadBloc>().add(
+                                                UploadBackLogEvent(tripId: trip.id, data: updateModel),
+                                              );
+                                            }
+                                                : null,
+                                          );
+                                        },
                                       ),
-                                    ),
+
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: trip.detLang != null
+                                              ? Colors.green
+                                              : trip.status == "0" || trip.status == "1"
+                                              ? Colors.red.shade200
+                                              : Colors.red,
+                                        ),
+                                        onPressed: trip.detLang == null
+                                            ? () async {
+                                          if (trip.status == "0" || trip.status == "1") {
+                                            Fluttertoast.showToast(
+                                              msg: "Please upload the trip data first before ending the trip.",
+                                              toastLength: Toast.LENGTH_LONG,
+                                            );
+                                            return;
+                                          }
+                                                await checkLocationServices();
+                                                Position position =
+                                                    await _determinePosition();
+                                                final updateModel = TripUpdateModel(
+                                                  cameraStatus: 1,
+                                                  status: "3",
+                                                  detLat: position.latitude,
+                                                  detLang: position.longitude,
+                                                  endedAt: DateTime.now(),
+                                                );
+                                                await updateTrip(
+                                                  updateModel,
+                                                  trip.id,
+                                                );
+                                                getAllTrips();
+                                              }
+                                            : null,
+                                        child: Text(
+                                          "End Trip",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
