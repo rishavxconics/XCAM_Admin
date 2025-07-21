@@ -194,7 +194,8 @@ class _VehicleAttachState extends State<VehicleAttach> {
                             );
 
                             try {
-                              await createTrip(trip, _selectedVehicle!.vehicleNumber);
+                              bool check = await createTrip(trip, _selectedVehicle!.vehicleNumber);
+                              if(check==true) {
                                 Fluttertoast.showToast(
                                   msg: "Trip Created successfully!",
                                 );
@@ -206,6 +207,20 @@ class _VehicleAttachState extends State<VehicleAttach> {
                                     },
                                   ),
                                 );
+                              }
+                              else{
+                                Fluttertoast.showToast(
+                                  msg: "Trip Already Exist, Please End previous Trip to Start a new one",
+                                );
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return Home();
+                                    },
+                                  ),
+                                );
+                              }
                             } catch (e) {
                               Fluttertoast.showToast(
                                 msg: "Failed to start trip",

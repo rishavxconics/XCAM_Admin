@@ -7,15 +7,28 @@ import 'package:logistics_customer/core/utilities/logger.dart';
 
 final Dio _dio = GetIt.I<Dio>();
 
-Future<void> createTrip(TripModel data, String vehicleNumber) async {
+Future<bool> createTrip(TripModel data, String vehicleNumber) async {
   try {
     String token = await SecureLocalStorage.getValue("token");
+    Response tripResponse = await _dio.get("${UrlConfig.baseurl}/trip/",
+      queryParameters: {"vehicle_number": vehicleNumber},
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+    List<TripViewModel> trips = (tripResponse.data as List)
+        .map((json) => TripViewModel.fromJson(json))
+        .toList();
+    CustomLogger.debug(trips[0]);
+    if(trips[0].detLat != null) {
       Response response = await _dio.post(
         "${UrlConfig.baseurl}/trip/create",
         data: data.toJson(),
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
       CustomLogger.debug(response.data);
+      return true;
+    }else{
+      return false;
+    }
   } on DioException catch (e) {
     CustomLogger.error("Trip creation failed: ${e.response?.data}");
     rethrow;
