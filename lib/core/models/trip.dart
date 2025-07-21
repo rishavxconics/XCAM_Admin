@@ -5,6 +5,7 @@ class TripModel {
   final String status;
   final double attLat;
   final double attLang;
+  final int cameraStatus;
 
   TripModel({
     required this.startedAt,
@@ -13,6 +14,7 @@ class TripModel {
     required this.status,
     required this.attLat,
     required this.attLang,
+    required this.cameraStatus,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class TripModel {
       "status": status,
       "att_lat": attLat,
       "att_lang": attLang,
+      "camera_status": cameraStatus,
     };
   }
 }
@@ -73,12 +76,14 @@ class TripViewModel {
 }
 
 class TripUpdateModel {
+  final int cameraStatus;
   final String status;
   final double detLat;
   final double detLang;
   final DateTime endedAt;
 
   TripUpdateModel({
+    required this.cameraStatus,
     required this.status,
     required this.detLat,
     required this.detLang,
@@ -87,6 +92,7 @@ class TripUpdateModel {
 
   Map<String, dynamic> toFormData() {
     return {
+      "camera_status": cameraStatus,
       "status": status,
       "det_lat": detLat,
       "det_lang": detLang,

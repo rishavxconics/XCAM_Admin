@@ -191,6 +191,7 @@ class _VehicleAttachState extends State<VehicleAttach> {
                               status: "0",
                               attLat: position.latitude,
                               attLang: position.longitude,
+                              cameraStatus: 0,
                             );
 
                             try {

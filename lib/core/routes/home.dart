@@ -236,7 +236,8 @@ class _HomeState extends State<Home> {
                                             Position position =
                                                 await _determinePosition();
                                             final updateModel = TripUpdateModel(
-                                              status: "1",
+                                              cameraStatus: 1,
+                                              status: "0",
                                               detLat: position.latitude,
                                               detLang: position.longitude,
                                               endedAt: DateTime.now(),

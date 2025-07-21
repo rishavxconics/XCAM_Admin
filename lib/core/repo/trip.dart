@@ -92,7 +92,7 @@ Future<void> updateTrip(TripUpdateModel data, int tripId) async {
     );
     CustomLogger.debug(response.data);
   } on DioException catch (e) {
-    CustomLogger.error("Trip creation failed: ${e.response?.data}");
+    CustomLogger.error("Trip Update failed: ${e.response?.data}, ${e.response?.statusCode}");
     rethrow;
   } catch (e) {
     CustomLogger.error(e);
