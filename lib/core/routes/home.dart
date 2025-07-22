@@ -255,8 +255,7 @@ class _HomeState extends State<Home> {
                                               child: CircularProgressIndicator(strokeWidth: 2),
                                             )
                                                 : const Icon(Icons.file_upload_outlined),
-                                            onPressed: (trip.detLang == null && !isUploadingThisTrip && trip.status != "2")
-                                                ? () {
+                                            onPressed: () {
                                               final updateModel = TripUpdateModel(
                                                 cameraStatus: 0,
                                                 status: "1",
@@ -270,35 +269,23 @@ class _HomeState extends State<Home> {
                                               context.read<UploadBloc>().add(
                                                 UploadBackLogEvent(tripId: trip.id, data: updateModel),
                                               );
-                                            }
-                                                : null,
+                                            },
                                           );
                                         },
                                       ),
 
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: trip.detLang != null
-                                              ? Colors.green
-                                              : trip.status == "0" || trip.status == "1"
-                                              ? Colors.red.shade200
-                                              : Colors.red,
+                                          backgroundColor: Colors.red,
                                         ),
                                         onPressed: trip.detLang == null
                                             ? () async {
-                                          if (trip.status == "0" || trip.status == "1") {
-                                            Fluttertoast.showToast(
-                                              msg: "Please upload the trip data first before ending the trip.",
-                                              toastLength: Toast.LENGTH_LONG,
-                                            );
-                                            return;
-                                          }
                                                 await checkLocationServices();
                                                 Position position =
                                                     await _determinePosition();
                                                 final updateModel = TripUpdateModel(
                                                   cameraStatus: 1,
-                                                  status: "3",
+                                                  status: "0",
                                                   detLat: position.latitude,
                                                   detLang: position.longitude,
                                                   endedAt: DateTime.now(),
