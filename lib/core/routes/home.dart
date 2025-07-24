@@ -233,7 +233,7 @@ class _HomeState extends State<Home> {
                                           CustomLogger.debug(state);
                                           if (state is UploadLoadedState || state is UploadErrorState) {
                                             if (state is UploadLoadedState) {
-                                              Fluttertoast.showToast(msg: "Upload complete.");
+                                              Fluttertoast.showToast(msg: "Uploading Backup");
                                             } else if (state is UploadErrorState) {
                                               Fluttertoast.showToast(msg: "Upload failed: ${state.errorModel.message}");
                                             }
