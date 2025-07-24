@@ -195,7 +195,7 @@ class _VehicleAttachState extends State<VehicleAttach> {
                             );
 
                             try {
-                              bool check = await createTrip(trip, _selectedVehicle!.vehicleNumber);
+                              bool check = await createTrip(trip, _selectedVehicle!.vehicleNumber, widget.deviceQr);
                               if(check==true) {
                                 Fluttertoast.showToast(
                                   msg: "Trip Created successfully!",

@@ -7,12 +7,12 @@ import 'package:logistics_customer/core/utilities/logger.dart';
 
 final Dio _dio = GetIt.I<Dio>();
 
-Future<bool> createTrip(TripModel data, String vehicleNumber) async {
+Future<bool> createTrip(TripModel data, String vehicleNumber, String qr) async {
   try {
     String token = await SecureLocalStorage.getValue("token");
     Response tripResponse = await _dio.get(
       "${UrlConfig.baseurl}/trip/",
-      queryParameters: {"vehicle_number": vehicleNumber},
+      queryParameters: {"device_qr": qr},
       options: Options(headers: {"Authorization": "Bearer $token"}),
     );
     List<TripViewModel> trips = (tripResponse.data as List)
