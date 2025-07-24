@@ -11,14 +11,11 @@ import 'package:logistics_customer/core/utilities/logger.dart';
 
 part 'upload_event.dart';
 part 'upload_state.dart';
+int attempts = 0;
 
 class UploadBloc extends Bloc<UploadEvent, UploadState> {
-  Timer? _statusRefreshTimer;
   UploadBloc(): super(UploadInitialState()){
     on<UploadBackLogEvent>(_upload);
-    on<UploadCheckCompletedEvent>((event, emit) {
-      emit(UploadLoadedState());
-    });
   }
 
   Future<void> _upload(UploadBackLogEvent event, Emitter<UploadState> emit) async{
@@ -27,14 +24,7 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
       String token = await SecureLocalStorage.getValue("token");
       bool check = await updateTripStatus(event.data,event.tripId, token);
       if(check == true){
-        _statusRefreshTimer?.cancel();
-        _statusRefreshTimer = Timer.periodic(Duration(seconds: 10), (_) async{
-          List<TripViewModel> trip = await getTrips();
-          if(trip.isNotEmpty && trip[0].status=="2"){
-            add(UploadCheckCompletedEvent());
-            _statusRefreshTimer?.cancel();
-          }
-        });
+          emit(UploadLoadedState());
       }
     }catch(e){
       CustomLogger.error(e);

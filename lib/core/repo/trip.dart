@@ -52,7 +52,7 @@ Future<List<TripViewModel>> getTrips() async {
         .toList();
     return trips;
   } on DioException catch (e) {
-    CustomLogger.error("Trip creation failed: ${e.response?.data}");
+    CustomLogger.error("Trip get failed: ${e.response?.data}");
     rethrow;
   } catch (e) {
     CustomLogger.error(e);

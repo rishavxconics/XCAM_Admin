@@ -232,40 +232,20 @@ class _HomeState extends State<Home> {
                                         listener: (context, state) {
                                           CustomLogger.debug(state);
                                           if (state is UploadLoadedState || state is UploadErrorState) {
-                                            setState(() {
-                                              uploadingTripId = null;
-                                            });
-
                                             if (state is UploadLoadedState) {
                                               Fluttertoast.showToast(msg: "Upload complete.");
-                                              getAllTrips();
                                             } else if (state is UploadErrorState) {
                                               Fluttertoast.showToast(msg: "Upload failed: ${state.errorModel.message}");
                                             }
                                           }
                                         },
                                         builder: (context, state) {
-                                          final isUploadingThisTrip = uploadingTripId == trip.id;
-
                                           return IconButton(
-                                            icon: isUploadingThisTrip
-                                                ? const SizedBox(
-                                              height: 20,
-                                              width: 20,
-                                              child: CircularProgressIndicator(strokeWidth: 2),
-                                            )
-                                                : const Icon(Icons.file_upload_outlined),
+                                            icon: const Icon(Icons.file_upload_outlined),
                                             onPressed: () {
                                               final updateModel = TripUpdateModel(
-                                                cameraStatus: 0,
                                                 status: "1",
-                                                endedAt: DateTime.now(),
                                               );
-
-                                              setState(() {
-                                                uploadingTripId = trip.id;
-                                              });
-
                                               context.read<UploadBloc>().add(
                                                 UploadBackLogEvent(tripId: trip.id, data: updateModel),
                                               );
@@ -273,7 +253,6 @@ class _HomeState extends State<Home> {
                                           );
                                         },
                                       ),
-
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.red,

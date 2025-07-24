@@ -8,5 +8,3 @@ class UploadBackLogEvent extends UploadEvent {
 
   UploadBackLogEvent({required this.tripId, required this.data});
 }
-
-class UploadCheckCompletedEvent extends UploadEvent {}

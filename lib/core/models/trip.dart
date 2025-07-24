@@ -76,32 +76,31 @@ class TripViewModel {
 }
 
 class TripUpdateModel {
-  final int cameraStatus;
-  final String? status;
-  final double? detLat;
-  final double? detLang;
-  final DateTime endedAt;
+  int? cameraStatus;
+  String? status;
+  double? detLat;
+  double? detLang;
+  DateTime? endedAt;
 
   TripUpdateModel({
-    required this.cameraStatus,
+    this.cameraStatus,
     this.status,
     this.detLat,
     this.detLang,
-    required this.endedAt,
+    this.endedAt,
   });
 
   Map<String, dynamic> toFormData() {
-    final data = {
-      "camera_status": cameraStatus,
-      "ended_at": endedAt.toIso8601String(),
-    };
+      final data = <String, dynamic>{};
 
-    if (status != null) data["status"] = status!;
-    if (detLat != null) data["det_lat"] = detLat!;
-    if (detLang != null) data["det_lang"] = detLang!;
+      if (endedAt != null) data["ended_at"] = endedAt!.toIso8601String();
+      if (cameraStatus != null) data["camera_status"] = cameraStatus!;
+      if (status != null) data["status"] = status!;
+      if (detLat != null) data["det_lat"] = detLat!;
+      if (detLang != null) data["det_lang"] = detLang!;
 
-    return data;
-  }
+      return data;
+    }
 }
 
 
