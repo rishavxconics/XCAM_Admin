@@ -11,9 +11,9 @@ import 'package:logistics_customer/core/utilities/logger.dart';
 
 part 'upload_event.dart';
 part 'upload_state.dart';
-int attempts = 0;
 
 class UploadBloc extends Bloc<UploadEvent, UploadState> {
+  int? uploadingTripId = 0;
   UploadBloc(): super(UploadInitialState()){
     on<UploadBackLogEvent>(_upload);
   }

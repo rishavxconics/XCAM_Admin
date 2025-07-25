@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:logistics_customer/core/bloc/auth/auth_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:logistics_customer/core/bloc/end_bloc/end_bloc.dart';
 import 'package:logistics_customer/core/bloc/upload_bloc/upload_bloc.dart';
 import 'package:logistics_customer/core/components/custombuttons.dart';
 import 'package:logistics_customer/core/models/trip.dart';
@@ -23,7 +24,6 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<TripViewModel> trips = [];
-  int? uploadingTripId;
 
   @override
   void initState() {
@@ -34,7 +34,6 @@ class _HomeState extends State<Home> {
 
   void getAllTrips() async {
     trips = await getTrips();
-    trips.sort((a, b) => b.startedAt.compareTo(a.startedAt));
     setState(() {});
   }
 
@@ -153,145 +152,147 @@ class _HomeState extends State<Home> {
           Expanded(
             child: trips.isEmpty
                 ? const Center(child: Text("No Current Trips"))
-                : SingleChildScrollView(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          dataTableTheme: DataTableThemeData(
-                            headingRowColor: MaterialStateProperty.all(
-                              Colors.grey[300],
-                            ),
-                          ),
+                : ListView.builder(
+                    itemCount: trips.length,
+                    itemBuilder: (context, index) {
+                      final trip = trips[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
                         ),
-                        child: DataTable(
-                          columns: const [
-                            DataColumn(
-                              label: Text(
-                                "Sln No",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-
-                            DataColumn(
-                              label: Text(
-                                "Vehicle",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                "Device",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                "Start Time",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                "Actions",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                          rows: trips.map((trip) {
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(trip.sequenceNumber)),
-                                DataCell(Text(trip.vehicleNumber)),
-                                DataCell(Text(trip.deviceQr)),
-                                DataCell(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    trip.startedAt.toString(),
-                                    style: const TextStyle(fontSize: 12),
+                                    "Sln No: ${trip.sequenceNumber}",
+                                    style: TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                ),
-                                DataCell(
-                                  Row(
-                                    children: [
-                                      BlocConsumer<UploadBloc, UploadState>(
-                                        listener: (context, state) {
-                                          CustomLogger.debug(state);
-                                          if (state is UploadLoadedState || state is UploadErrorState) {
-                                            if (state is UploadLoadedState) {
-                                              Fluttertoast.showToast(msg: "Uploading Backup");
-                                            } else if (state is UploadErrorState) {
-                                              Fluttertoast.showToast(msg: "Upload failed: ${state.errorModel.message}");
-                                            }
-                                          }
-                                        },
-                                        builder: (context, state) {
-                                          return IconButton(
-                                            icon: const Icon(Icons.file_upload_outlined),
-                                            onPressed: () {
-                                              final updateModel = TripUpdateModel(
-                                                status: "1",
-                                              );
-                                              context.read<UploadBloc>().add(
-                                                UploadBackLogEvent(tripId: trip.id, data: updateModel),
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                      ElevatedButton(
+                                  Text("Vehicle: ${trip.vehicleNumber}"),
+                                  Text("Device: ${trip.deviceQr}"),
+                                  Text("Start Time: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(trip.startedAt)}"),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Column(
+                                children: [
+                                  BlocBuilder<EndBloc, EndState>(
+                                    builder: (context, state) {
+                                      final status =
+                                          state.tripStatuses[trip.id] ??
+                                              TripEndStatus.initial;
+                                      final isLoading =
+                                          status == TripEndStatus.loading;
+                                      final isEnded =
+                                          status == TripEndStatus.ended;
+
+                                      if (isLoading) {
+                                        return const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        );
+                                      }
+
+                                      return ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.red,
+                                          backgroundColor: isEnded
+                                              ? Colors.grey
+                                              : Colors.red,
                                         ),
-                                        onPressed: trip.detLang == null
+                                        onPressed:
+                                        (trip.detLang == null && !isEnded)
                                             ? () async {
-                                                await checkLocationServices();
-                                                Position position =
-                                                    await _determinePosition();
-                                                final updateModel = TripUpdateModel(
-                                                  cameraStatus: 1,
-                                                  status: "0",
-                                                  detLat: position.latitude,
-                                                  detLang: position.longitude,
-                                                  endedAt: DateTime.now(),
-                                                );
-                                                await updateTrip(
-                                                  updateModel,
-                                                  trip.id,
-                                                );
-                                                getAllTrips();
-                                              }
+                                          await checkLocationServices();
+                                          Position position =
+                                          await _determinePosition();
+                                          final updateModel =
+                                          TripUpdateModel(
+                                            cameraStatus: 1,
+                                            status: "0",
+                                            detLat: position.latitude,
+                                            detLang:
+                                            position.longitude,
+                                            endedAt: DateTime.now(),
+                                          );
+                                          context.read<EndBloc>().add(
+                                            EndTripEvent(
+                                              trip: updateModel,
+                                              tripId: trip.id,
+                                            ),
+                                          );
+                                        }
                                             : null,
                                         child: Text(
-                                          "End Trip",
+                                          isEnded ? "Ended" : "End Trip",
                                           style: const TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                                  BlocConsumer<UploadBloc, UploadState>(
+                                    listener: (context, state) {
+                                      if (state is UploadLoadingState) {
+                                        context.read<UploadBloc>().uploadingTripId = trip.id;
+                                      } else if (state is UploadLoadedState) {
+                                        if (context.read<UploadBloc>().uploadingTripId == trip.id) {
+                                          Fluttertoast.showToast(
+                                            msg: "Uploading Backup",
+                                          );
+                                          context.read<UploadBloc>().uploadingTripId = 0;
+                                        }
+                                      } else if (state is UploadErrorState) {
+                                        if (context.read<UploadBloc>().uploadingTripId == trip.id) {
+                                          Fluttertoast.showToast(msg: "Upload failed: ${state.errorModel.message}",);
+                                          context.read<UploadBloc>().uploadingTripId = 0;
+                                        }
+                                      }
+                                    },
+                                    builder: (context, state) {
+                                      if (context.read<UploadBloc>().uploadingTripId == trip.id && state is UploadLoadingState) {
+                                        return const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        );
+                                      }
+                                      return IconButton(
+                                        icon: const Icon(
+                                          Icons.file_upload_outlined,
+                                        ),
+                                        onPressed: () {
+                                          final updateModel = TripUpdateModel(
+                                            cameraStatus: trip.cameraStatus,
+                                            status: "1",
+                                          );
+                                          context.read<UploadBloc>().add(
+                                            UploadBackLogEvent(
+                                              tripId: trip.id,
+                                              data: updateModel,
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
           ),
         ],

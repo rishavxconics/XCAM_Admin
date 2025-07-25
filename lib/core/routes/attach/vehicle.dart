@@ -193,6 +193,7 @@ class _VehicleAttachState extends State<VehicleAttach> {
                               attLang: position.longitude,
                               cameraStatus: 0,
                             );
+                            CustomLogger.debug(trip);
 
                             try {
                               bool check = await createTrip(trip, _selectedVehicle!.vehicleNumber, widget.deviceQr);

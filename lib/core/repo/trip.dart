@@ -15,11 +15,11 @@ Future<bool> createTrip(TripModel data, String vehicleNumber, String qr) async {
       queryParameters: {"device_qr": qr},
       options: Options(headers: {"Authorization": "Bearer $token"}),
     );
+
     List<TripViewModel> trips = (tripResponse.data as List)
         .map((json) => TripViewModel.fromJson(json))
         .toList();
-    CustomLogger.debug(trips[0]);
-    if (trips[0].detLat != null) {
+    if (trips.isEmpty || trips[0].detLat != null) {
       Response response = await _dio.post(
         "${UrlConfig.baseurl}/trip/create",
         data: data.toJson(),
@@ -31,7 +31,7 @@ Future<bool> createTrip(TripModel data, String vehicleNumber, String qr) async {
       return false;
     }
   } on DioException catch (e) {
-    CustomLogger.error("Trip creation failed: ${e.response?.data}");
+    CustomLogger.error("Trip creation failed: ${e.response?.data}, ${e.response?.statusCode}");
     rethrow;
   } catch (e) {
     CustomLogger.error(e);
@@ -50,31 +50,10 @@ Future<List<TripViewModel>> getTrips() async {
     List<TripViewModel> trips = (response.data as List)
         .map((json) => TripViewModel.fromJson(json))
         .toList();
+    trips.sort((a, b) => b.startedAt.compareTo(a.startedAt));
     return trips;
   } on DioException catch (e) {
     CustomLogger.error("Trip get failed: ${e.response?.data}");
-    rethrow;
-  } catch (e) {
-    CustomLogger.error(e);
-    rethrow;
-  }
-}
-
-Future<List<TripViewModel>> getFilteredTrips(String vehicleNumber) async {
-  try {
-    String token = await SecureLocalStorage.getValue("token");
-    Response response = await _dio.get(
-      "${UrlConfig.baseurl}/trip/",
-      queryParameters: {"vehicle_number": vehicleNumber},
-      options: Options(headers: {"Authorization": "Bearer $token"}),
-    );
-    CustomLogger.debug("Response data: ${response.data}");
-    List<TripViewModel> trips = (response.data as List)
-        .map((json) => TripViewModel.fromJson(json))
-        .toList();
-    return trips;
-  } on DioException catch (e) {
-    CustomLogger.error("Trip creation failed: ${e.response?.data}");
     rethrow;
   } catch (e) {
     CustomLogger.error(e);

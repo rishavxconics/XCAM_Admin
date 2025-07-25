@@ -41,6 +41,7 @@ class TripViewModel {
   final double? detLang;
   final String deviceQr;
   final String vehicleNumber;
+  final int cameraStatus;
 
   TripViewModel({
     required this.id,
@@ -53,6 +54,7 @@ class TripViewModel {
     required this.detLat,
     required this.deviceQr,
     required this.vehicleNumber,
+    required this.cameraStatus
   });
 
   factory TripViewModel.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,7 @@ class TripViewModel {
           : null,
       deviceQr: json['device']['qr'],
       vehicleNumber: json['vehicle']['vehicle_number'],
+      cameraStatus: json['camera_status']
     );
   }
 }

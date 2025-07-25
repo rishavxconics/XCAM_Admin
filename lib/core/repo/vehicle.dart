@@ -9,6 +9,7 @@ final Dio _dio = GetIt.I<Dio>();
 
 Future<List<VehicleModel>> fetchVehicle() async {
   try {
+    CustomLogger.debug("Vehicle");
     String token = await SecureLocalStorage.getValue("token");
     Response response = await _dio.get(
       "${UrlConfig.baseurl}/vehicle/",
