@@ -42,16 +42,30 @@ Future<bool> createTrip(TripModel data, String vehicleNumber, String qr) async {
 Future<List<TripViewModel>> getTrips() async {
   try {
     String token = await SecureLocalStorage.getValue("token");
-    Response response = await _dio.get(
-      "${UrlConfig.baseurl}/trip/",
-      options: Options(headers: {"Authorization": "Bearer $token"}),
-    );
-    CustomLogger.debug("Response data: ${response.data}");
-    List<TripViewModel> trips = (response.data as List)
-        .map((json) => TripViewModel.fromJson(json))
-        .toList();
-    trips.sort((a, b) => b.startedAt.compareTo(a.startedAt));
-    return trips;
+    int offset = 0;
+    int limit = 50;
+    List<TripViewModel> dataAll = [];
+    while(true) {
+      Response response = await _dio.get(
+        "${UrlConfig.baseurl}/trip/",
+        queryParameters: {"offset": offset, "limit": limit},
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
+      CustomLogger.debug("Response data: ${response.data}");
+      List<TripViewModel> trips = (response.data as List)
+          .map((json) => TripViewModel.fromJson(json))
+          .toList();
+
+      if (trips.isEmpty) break;
+
+      dataAll.addAll(trips);
+
+      if (trips.length < limit) break; // No more data to fetch
+
+      offset += limit;
+    }
+      dataAll.sort((a, b) => b.startedAt.compareTo(a.startedAt));
+      return dataAll;
   } on DioException catch (e) {
     CustomLogger.error("Trip get failed: ${e.response?.data}");
     rethrow;

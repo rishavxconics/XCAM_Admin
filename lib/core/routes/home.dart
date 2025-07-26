@@ -151,7 +151,7 @@ class _HomeState extends State<Home> {
           SizedBox(height: 20),
           Expanded(
             child: trips.isEmpty
-                ? const Center(child: Text("No Current Trips"))
+                ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     itemCount: trips.length,
                     itemBuilder: (context, index) {
