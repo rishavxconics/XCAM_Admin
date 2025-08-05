@@ -258,20 +258,14 @@ class _HomeState extends State<Home> {
                                       }
                                     },
                                     builder: (context, state) {
-                                      if (context.read<UploadBloc>().uploadingTripId == trip.id && state is UploadLoadingState) {
-                                        return const SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        );
-                                      }
                                       return IconButton(
                                         icon: const Icon(
                                           Icons.file_upload_outlined,
                                         ),
                                         onPressed: () {
+                                          Fluttertoast.showToast(
+                                            msg: "Uploading Backup",
+                                          );
                                           final updateModel = TripUpdateModel(
                                             cameraStatus: trip.cameraStatus,
                                             status: "1",

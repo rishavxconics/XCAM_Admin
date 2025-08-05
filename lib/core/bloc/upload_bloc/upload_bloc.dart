@@ -20,7 +20,6 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
 
   Future<void> _upload(UploadBackLogEvent event, Emitter<UploadState> emit) async{
     try{
-      emit(UploadLoadingState());
       String token = await SecureLocalStorage.getValue("token");
       bool check = await updateTripStatus(event.device!,event.startTime!,event.data,event.tripId, token);
       if(check == true){
