@@ -123,6 +123,8 @@ Future<bool> updateTripStatus(
     CustomLogger.debug(getTripResponse.data);
     final tripData = getTripResponse.data[0];
     final double? detLat = tripData['det_lat'];
+    final int cameraStatus = tripData['camera_status'];
+    CustomLogger.debug(cameraStatus);
     final double? detLang = tripData['det_lang'];
     final DateTime? endDate = tripData['ended_at'] != null
         ? DateTime.parse(tripData['ended_at'])
@@ -131,6 +133,7 @@ Future<bool> updateTripStatus(
     Map<String, dynamic> updateDataMap = data.toFormData();
 
     if (detLat != null && detLang != null && endDate != null) {
+      updateDataMap['camera_status'] = cameraStatus;
       updateDataMap['det_lat'] = detLat;
       updateDataMap['det_lang'] = detLang;
       updateDataMap['ended_at'] = endDate;
