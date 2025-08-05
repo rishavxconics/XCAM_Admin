@@ -1,5 +1,6 @@
 class UrlConfig {
-  static String baseurl = "http://172.105.36.66:6080";
+  //static String baseurl = "http://172.105.36.66:6080";
+  static String baseurl = "http://172.105.36.66:6050";
 }
 
 class ImageConfig{

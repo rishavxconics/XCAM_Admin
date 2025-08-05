@@ -278,6 +278,8 @@ class _HomeState extends State<Home> {
                                           );
                                           context.read<UploadBloc>().add(
                                             UploadBackLogEvent(
+                                              device: trip.deviceQr,
+                                              startTime: trip.startedAt,
                                               tripId: trip.id,
                                               data: updateModel,
                                             ),

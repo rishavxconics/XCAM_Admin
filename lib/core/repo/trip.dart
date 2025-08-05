@@ -31,7 +31,9 @@ Future<bool> createTrip(TripModel data, String vehicleNumber, String qr) async {
       return false;
     }
   } on DioException catch (e) {
-    CustomLogger.error("Trip creation failed: ${e.response?.data}, ${e.response?.statusCode}");
+    CustomLogger.error(
+      "Trip creation failed: ${e.response?.data}, ${e.response?.statusCode}",
+    );
     rethrow;
   } catch (e) {
     CustomLogger.error(e);
@@ -45,7 +47,7 @@ Future<List<TripViewModel>> getTrips() async {
     int offset = 0;
     int limit = 50;
     List<TripViewModel> dataAll = [];
-    while(true) {
+    while (true) {
       Response response = await _dio.get(
         "${UrlConfig.baseurl}/trip/",
         queryParameters: {"offset": offset, "limit": limit},
@@ -64,8 +66,8 @@ Future<List<TripViewModel>> getTrips() async {
 
       offset += limit;
     }
-      dataAll.sort((a, b) => b.startedAt.compareTo(a.startedAt));
-      return dataAll;
+    dataAll.sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    return dataAll;
   } on DioException catch (e) {
     CustomLogger.error("Trip get failed: ${e.response?.data}");
     rethrow;
@@ -96,13 +98,47 @@ Future<void> updateTrip(TripUpdateModel data, int tripId) async {
   }
 }
 
-Future<bool> updateTripStatus(TripUpdateModel data,int tripId, String token) async {
+Future<bool> updateTripStatus(
+  String device,
+  DateTime startTime,
+  TripUpdateModel data,
+  int tripId,
+  String token,
+) async {
   try {
-    CustomLogger.debug("Sending updateTripStatus payload: ${data.toFormData()}");
+    CustomLogger.debug(
+      "Sending updateTripStatus payload: ${data.toFormData()}",
+    );
+    Response getTripResponse = await _dio.get(
+      "${UrlConfig.baseurl}/trip/",
+      queryParameters: {
+        "device_qr": device,
+        "start_from": startTime.toIso8601String(),
+        "start_to": startTime.toIso8601String(),
+        "offset": 0,
+        "limit": 1,
+      },
+      options: Options(headers: {"Authorization": "Bearer $token"}),
+    );
+    CustomLogger.debug(getTripResponse.data);
+    final tripData = getTripResponse.data[0];
+    final double? detLat = tripData['det_lat'];
+    final double? detLang = tripData['det_lang'];
+    final DateTime? endDate = tripData['ended_at'] != null
+        ? DateTime.parse(tripData['ended_at'])
+        : null;
+
+    Map<String, dynamic> updateDataMap = data.toFormData();
+
+    if (detLat != null && detLang != null && endDate != null) {
+      updateDataMap['det_lat'] = detLat;
+      updateDataMap['det_lang'] = detLang;
+      updateDataMap['ended_at'] = endDate;
+    }
     Response response = await _dio.put(
       "${UrlConfig.baseurl}/trip/update/$tripId",
       queryParameters: {"trip_id": tripId},
-      data: (FormData.fromMap(data.toFormData())),
+      data: (FormData.fromMap(updateDataMap)),
       options: Options(headers: {"Authorization": "Bearer $token"}),
     );
     CustomLogger.debug(response.data);

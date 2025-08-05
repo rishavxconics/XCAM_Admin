@@ -22,7 +22,7 @@ class UploadBloc extends Bloc<UploadEvent, UploadState> {
     try{
       emit(UploadLoadingState());
       String token = await SecureLocalStorage.getValue("token");
-      bool check = await updateTripStatus(event.data,event.tripId, token);
+      bool check = await updateTripStatus(event.device!,event.startTime!,event.data,event.tripId, token);
       if(check == true){
           emit(UploadLoadedState());
       }
